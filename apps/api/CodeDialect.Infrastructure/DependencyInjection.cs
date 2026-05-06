@@ -15,11 +15,20 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var useInMemory = configuration.GetValue<bool>("UseInMemoryDatabase");
 
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(connectionString,
-                b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+        if (useInMemory)
+        {
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseInMemoryDatabase("CodeDialectDb"));
+        }
+        else
+        {
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseNpgsql(connectionString,
+                    b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+        }
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
@@ -27,13 +36,20 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-        services.AddStackExchangeRedisCache(options =>
+        if (!useInMemory)
         {
-            options.Configuration = configuration.GetConnectionString("Redis");
-        });
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = configuration.GetConnectionString("Redis");
+            });
+        }
+        else
+        {
+            services.AddDistributedMemoryCache();
+        }
 
         var jwtSettings = configuration.GetSection("JwtSettings");
-        var secret = jwtSettings.GetValue<string>("Secret");
+        var secret = jwtSettings.GetValue<string>("Secret") ?? "SuperSecretKeyForDevelopmentOnly123!";
 
         services.AddAuthentication(options =>
         {
@@ -48,9 +64,9 @@ public static class DependencyInjection
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtSettings.GetValue<string>("Issuer"),
-                ValidAudience = jwtSettings.GetValue<string>("Audience"),
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret!))
+                ValidIssuer = jwtSettings.GetValue<string>("Issuer") ?? "CodeDialect",
+                ValidAudience = jwtSettings.GetValue<string>("Audience") ?? "CodeDialect",
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret))
             };
         });
 

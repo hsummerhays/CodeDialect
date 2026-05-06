@@ -16,11 +16,12 @@ public record ChallengeDetailsDto(
     string Description,
     Difficulty Difficulty,
     string CategoryName,
-    List<ChallengeVersionDto> Versions,
+    List<ChallengeImplementationDto> Implementations,
     List<string> Tags);
 
-public record ChallengeVersionDto(
+public record ChallengeImplementationDto(
     Guid Id,
-    string Name,
+    Guid DialectId,
+    string DialectName,
     string LanguageName,
-    string BoilerplateCode);
+    string StarterCode);

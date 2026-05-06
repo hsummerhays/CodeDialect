@@ -21,4 +21,12 @@ public class ChallengesController : ControllerBase
     {
         return await _mediator.Send(new GetChallengesQuery());
     }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ChallengeDetailsDto>> GetChallenge(Guid id)
+    {
+        var result = await _mediator.Send(new GetChallengeDetailsQuery(id));
+        if (result == null) return NotFound();
+        return result;
+    }
 }

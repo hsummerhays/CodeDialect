@@ -11,15 +11,14 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
     public DbSet<Challenge> Challenges => Set<Challenge>();
-    public DbSet<ChallengeCategory> Categories => Set<ChallengeCategory>();
-    public DbSet<ChallengeLanguage> Languages => Set<ChallengeLanguage>();
-    public DbSet<ChallengeVersion> Versions => Set<ChallengeVersion>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Language> Languages => Set<Language>();
+    public DbSet<Dialect> Dialects => Set<Dialect>();
+    public DbSet<ChallengeImplementation> Implementations => Set<ChallengeImplementation>();
+    public DbSet<ExecutionProfile> ExecutionProfiles => Set<ExecutionProfile>();
     public DbSet<Submission> Submissions => Set<Submission>();
-    public DbSet<SubmissionResult> Results => Set<SubmissionResult>();
-    public DbSet<SyntaxComparison> Comparisons => Set<SyntaxComparison>();
     public DbSet<Score> Scores => Set<Score>();
-    public DbSet<Badge> Badges => Set<Badge>();
-    public DbSet<LearningPath> LearningPaths => Set<LearningPath>();
+    public DbSet<Comparison> Comparisons => Set<Comparison>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -27,8 +26,17 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
-        // Feature-specific configurations
-        builder.Entity<Challenge>().Property(c => c.Tags).HasColumnType("text[]");
+        // Feature-specific configurations for PostgreSQL arrays/JSON
+        // We only apply these if we are using PostgreSQL
+        if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
+        {
+            builder.Entity<Challenge>().Property(c => c.Tags).HasColumnType("text[]");
+            builder.Entity<Dialect>().Property(d => d.SyntaxFeatures).HasColumnType("text[]");
+            
+            // ExecutionProfile environment variables as JSON
+            builder.Entity<ExecutionProfile>().Property(e => e.EnvironmentVariables)
+                .HasColumnType("jsonb");
+        }
     }
 }
 

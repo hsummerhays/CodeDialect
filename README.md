@@ -212,15 +212,28 @@ The execution engine is intentionally abstracted to support future scalability a
 
 ---
 
-## Local Setup
+### Quick Start (Windows)
 
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/hsummerhays/CodeDialect.git
+```batch
+.\scripts\run-dev.bat
 ```
 
-### 2. Start Infrastructure Services
+*Or via PowerShell:*
+
+```powershell
+.\scripts\run-dev.ps1
+```
+
+### Quick Start (Linux/macOS)
+
+```bash
+chmod +x scripts/*.sh
+./scripts/run-dev.sh
+```
+
+### Manual Setup
+
+#### 1. Start Infrastructure Services
 
 ```bash
 cd docker
