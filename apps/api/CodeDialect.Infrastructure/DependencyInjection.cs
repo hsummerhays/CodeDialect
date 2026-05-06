@@ -2,6 +2,7 @@ using System.Text;
 using CodeDialect.Application.Common.Interfaces;
 using CodeDialect.Infrastructure.Identity;
 using CodeDialect.Infrastructure.Persistence;
+using CodeDialect.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,7 @@ public static class DependencyInjection
         }
 
         services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
+        services.AddScoped<ICodeExecutionService, StubCodeExecutionService>();
 
         services.AddIdentity<ApplicationUser, ApplicationRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -49,7 +51,10 @@ public static class DependencyInjection
         }
 
         var jwtSettings = configuration.GetSection("JwtSettings");
-        var secret = jwtSettings.GetValue<string>("Secret") ?? "SuperSecretKeyForDevelopmentOnly123!";
+        var secret = jwtSettings.GetValue<string>("Secret");
+        if (string.IsNullOrWhiteSpace(secret))
+            throw new InvalidOperationException(
+                "JwtSettings:Secret is not configured. Set it via the JwtSettings__Secret environment variable.");
 
         services.AddAuthentication(options =>
         {

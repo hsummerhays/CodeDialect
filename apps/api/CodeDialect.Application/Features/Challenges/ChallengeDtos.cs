@@ -25,3 +25,7 @@ public record ChallengeImplementationDto(
     string DialectName,
     string LanguageName,
     string StarterCode);
+
+public record SubmitChallengeRequest(Guid DialectId, string Code);
+
+public record SubmissionResultDto(Guid SubmissionId, string Status);

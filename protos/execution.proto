@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package codedialect.runner;
+
+option csharp_namespace = "CodeDialect.Runner.Grpc";
+
+// The Execution Service is called by the API to run code on the runner node.
+service ExecutionService {
+  // Execute a specific challenge implementation
+  rpc ExecuteCode (ExecuteCodeRequest) returns (ExecuteCodeResponse);
+}
+
+message ExecuteCodeRequest {
+  string run_id = 1;
+  string dialect = 2; // e.g., "Java", "CSharp"
+  string version = 3; // e.g., "21", "10.0"
+  string code = 4;
+  string test_cases = 5; // JSON string of test cases
+  int32 timeout_ms = 6;
+  int64 memory_limit_bytes = 7;
+}
+
+message ExecuteCodeResponse {
+  string run_id = 1;
+  bool success = 2;
+  string standard_output = 3;
+  string standard_error = 4;
+  int64 execution_time_ms = 5;
+  int64 memory_used_bytes = 6;
+  string status = 7; // e.g., "Passed", "Failed", "Timeout", "OOM"
+}

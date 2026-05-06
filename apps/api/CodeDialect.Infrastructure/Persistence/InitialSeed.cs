@@ -2,6 +2,7 @@ using CodeDialect.Domain.Entities;
 using CodeDialect.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace CodeDialect.Infrastructure.Persistence;
 
@@ -10,13 +11,16 @@ public static class InitialSeed
     public static async Task SeedAsync(IServiceProvider serviceProvider)
     {
         var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+        var logger = serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("InitialSeed");
 
-        try 
+        try
         {
-            // Try to ensure DB exists, but ignore if it fails (common in InMemory or restricted envs)
             await context.Database.EnsureCreatedAsync();
         }
-        catch { }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "EnsureCreated failed — database may already exist or is unavailable");
+        }
 
         // Standard check to prevent duplicate seeding
         if (await context.Challenges.AnyAsync()) return;
@@ -209,6 +213,15 @@ public static class InitialSeed
         await context.Challenges.AddRangeAsync(apiChallenge, concurrencyChallenge, fileIoChallenge, diChallenge, typeSafeChallenge, pythonDataChallenge);
         await context.Implementations.AddRangeAsync(apiOld, apiNew, java8Concurrency, java21Concurrency, jsLegacyIo, jsModernIo, diOld, diNew, tsSafetyImpl, py2Impl, py3Impl);
 
-        await context.SaveChangesAsync();
+        try
+        {
+            await context.SaveChangesAsync();
+            logger.LogInformation("Database seeded successfully with {Count} challenges", 6);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to seed the database");
+            throw;
+        }
     }
 }

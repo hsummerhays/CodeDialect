@@ -1,0 +1,16 @@
+{
+  "name": "codedialect",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:infra": "docker compose -f docker/docker-compose.infra.yml up -d",
+    "dev:api": "dotnet watch run --project apps/api/CodeDialect.WebAPI/CodeDialect.WebAPI.csproj",
+    "dev:web": "npm run dev --prefix apps/web",
+    "install:all": "npm install && npm install --prefix apps/web && dotnet restore apps/api/CodeDialect.WebAPI/CodeDialect.WebAPI.csproj",
+    "build:all": "npm run build --prefix apps/web && dotnet build apps/api/CodeDialect.WebAPI/CodeDialect.WebAPI.csproj"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

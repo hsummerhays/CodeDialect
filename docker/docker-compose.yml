@@ -1,15 +1,13 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
     container_name: codedialect_db
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: codedialect
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-codedialect}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -17,7 +15,7 @@ services:
     image: redis:7-alpine
     container_name: codedialect_redis
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
 
   api:
     build:
@@ -25,11 +23,13 @@ services:
       dockerfile: docker/Dockerfile.api
     container_name: codedialect_api
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Host=db;Database=codedialect;Username=postgres;Password=postgres
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ConnectionStrings__DefaultConnection: >-
+        Host=db;Database=${POSTGRES_DB:-codedialect};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
       ConnectionStrings__Redis: redis:6379
+      JwtSettings__Secret: ${JWT_SECRET}
     ports:
-      - "5187:8080"
+      - "${API_PORT:-5187}:8080"
     depends_on:
       - db
       - redis

@@ -1,4 +1,5 @@
 using CodeDialect.Application.Features.Challenges;
+using CodeDialect.Application.Features.Challenges.Commands;
 using CodeDialect.Application.Features.Challenges.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -28,5 +29,12 @@ public class ChallengesController : ControllerBase
         var result = await _mediator.Send(new GetChallengeDetailsQuery(id));
         if (result == null) return NotFound();
         return result;
+    }
+
+    [HttpPost("{id}/submissions")]
+    public async Task<ActionResult<SubmissionResultDto>> SubmitChallenge(Guid id, [FromBody] SubmitChallengeRequest request)
+    {
+        var result = await _mediator.Send(new SubmitChallengeCommand(id, request.DialectId, request.Code));
+        return Accepted(result);
     }
 }

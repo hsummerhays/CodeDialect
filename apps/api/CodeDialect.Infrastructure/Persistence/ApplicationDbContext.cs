@@ -23,19 +23,22 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
-        
+
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
-        // Feature-specific configurations for PostgreSQL arrays/JSON
-        // We only apply these if we are using PostgreSQL
+        // Value converter so Dictionary<string,string> works with all providers (including InMemory)
+        builder.Entity<ExecutionProfile>()
+            .Property(e => e.EnvironmentVariables)
+            .HasConversion(
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new()
+            );
+
         if (Database.ProviderName == "Npgsql.EntityFrameworkCore.PostgreSQL")
         {
             builder.Entity<Challenge>().Property(c => c.Tags).HasColumnType("text[]");
             builder.Entity<Dialect>().Property(d => d.SyntaxFeatures).HasColumnType("text[]");
-            
-            // ExecutionProfile environment variables as JSON
-            builder.Entity<ExecutionProfile>().Property(e => e.EnvironmentVariables)
-                .HasColumnType("jsonb");
+            builder.Entity<ExecutionProfile>().Property(e => e.EnvironmentVariables).HasColumnType("jsonb");
         }
     }
 }
