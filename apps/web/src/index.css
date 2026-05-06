@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.glass-panel {
+  @apply bg-card/50 backdrop-blur-md border border-card-border;
+}
+
+.code-editor-container {
+  @apply rounded-lg overflow-hidden border border-card-border;
+}

@@ -1,0 +1,29 @@
+# .gitignore for CodeDialect
+
+# .NET
+bin/
+obj/
+*.user
+*.userosscache
+*.sln.docstates
+
+# Node.js
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Docker
+docker/data/
+
+# OS
+Thumbs.db
+desktop.ini

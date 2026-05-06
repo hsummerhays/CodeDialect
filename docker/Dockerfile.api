@@ -1,0 +1,21 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /app
+
+COPY ["apps/api/CodeDialect.WebAPI/CodeDialect.WebAPI.csproj", "apps/api/CodeDialect.WebAPI/"]
+COPY ["apps/api/CodeDialect.Application/CodeDialect.Application.csproj", "apps/api/CodeDialect.Application/"]
+COPY ["apps/api/CodeDialect.Domain/CodeDialect.Domain.csproj", "apps/api/CodeDialect.Domain/"]
+COPY ["apps/api/CodeDialect.Infrastructure/CodeDialect.Infrastructure.csproj", "apps/api/CodeDialect.Infrastructure/"]
+
+RUN dotnet restore "apps/api/CodeDialect.WebAPI/CodeDialect.WebAPI.csproj"
+
+COPY . .
+WORKDIR "/app/apps/api/CodeDialect.WebAPI"
+RUN dotnet build "CodeDialect.WebAPI.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "CodeDialect.WebAPI.csproj" -c Release -o /app/publish
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "CodeDialect.WebAPI.dll"]

@@ -1,0 +1,9 @@
+{
+  "id": "string-interpolation",
+  "title": "String Interpolation Performance",
+  "category": "Back-End",
+  "difficulty": "Intermediate",
+  "tags": [".NET", "C#", "Performance"],
+  "description": "Compare C# 8.0 string interpolation with .NET 10 enhanced interpolated string handlers.",
+  "expectedOutput": "Hello, Developer!"
+}
