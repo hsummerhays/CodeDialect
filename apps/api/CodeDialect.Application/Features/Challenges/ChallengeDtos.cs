@@ -1,3 +1,4 @@
+using CodeDialect.Application.Common.Models;
 using CodeDialect.Domain.Enums;
 
 namespace CodeDialect.Application.Features.Challenges;
@@ -24,8 +25,8 @@ public record ChallengeImplementationDto(
     Guid DialectId,
     string DialectName,
     string LanguageName,
-    string StarterCode);
-
-public record SubmitChallengeRequest(Guid DialectId, string Code);
+    string StarterCode,
+    string ReferenceSolution,
+    List<string> SyntaxFeatures);
 
 public record SubmissionResultDto(Guid SubmissionId, string Status);

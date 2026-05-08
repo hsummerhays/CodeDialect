@@ -1,73 +1,127 @@
-# React + TypeScript + Vite
+# CodeDialect — Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + TypeScript 6 frontend for the CodeDialect platform.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| | |
+|---|---|
+| Framework | React 19 |
+| Language | TypeScript 6 |
+| Build | Vite 8 |
+| Styling | Tailwind CSS v4 |
+| Editor | `@monaco-editor/react` (Monaco / VS Code engine) |
+| Data fetching | TanStack Query v5 + Axios |
+| Routing | React Router v7 |
+| Animation | Framer Motion |
+| State | Zustand |
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Development
 
-## Expanding the ESLint configuration
+```bash
+# From the repo root (starts API + web together)
+npm run dev
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Or from this directory alone
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The app runs at `http://localhost:5173`. Vite proxies `/api/*` to the API at `http://localhost:5187`, so no CORS configuration is needed in development.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Build
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build        # type-check + Vite production build → dist/
+npm run preview      # serve the production build locally
 ```
+
+### Lint
+
+```bash
+npm run lint
+```
+
+---
+
+## Structure
+
+```
+src/
+├── lib/
+│   └── api.ts              # Axios instance, typed API client, shared DTOs
+├── components/
+│   ├── ComparisonViewer.tsx # Side-by-side / diff Monaco editor panel
+│   ├── ChallengeCard.tsx    # Card shown in the challenge grid
+│   ├── Layout.tsx           # Sidebar navigation shell
+│   └── ErrorBoundary.tsx    # React error boundary
+├── pages/
+│   └── ChallengeDetail.tsx  # Challenge detail + dialect selector
+├── App.tsx                  # Routes, QueryClientProvider, Home page
+└── main.tsx                 # Entry point
+```
+
+---
+
+## API Client (`src/lib/api.ts`)
+
+All backend communication goes through `challengesApi`. Types mirror the backend DTOs exactly.
+
+```ts
+challengesApi.getAll({ page?, pageSize?, difficulty? })
+  // → PaginatedResult<ChallengeDto>
+
+challengesApi.getById(id: string)
+  // → ChallengeDetailsDto
+
+challengesApi.submit(id: string, { dialectId, code })
+  // → SubmissionResultDto   (requires auth — returns 401 until auth UI is built)
+```
+
+A 401 response interceptor logs a warning and is wired for a future redirect to `/login`.
+
+---
+
+## Key Components
+
+### `ComparisonViewer`
+
+Accepts `leftLanguage` / `rightLanguage` props for per-side Monaco syntax highlighting. Scroll sync between editors uses an `isSyncing` guard ref to prevent feedback loops. Toggle between side-by-side and diff views.
+
+Props:
+```ts
+leftCode, rightCode
+leftTitle, rightTitle
+leftLanguage, rightLanguage   // Monaco language identifiers (e.g. 'csharp', 'java')
+displayLanguage               // Badge shown in the header
+challengeTitle, description
+leftReferenceSolution?, rightReferenceSolution?
+leftFeatures?, rightFeatures? // Syntax feature tags
+```
+
+### `ChallengeDetail`
+
+Fetches challenge data via TanStack Query. When a challenge has more than two implementations, renders dialect selectors for left and right panels. Derives Monaco language identifiers from the `languageName` field using a local lookup map.
+
+---
+
+## Environment Variables
+
+| Variable | Description |
+|---|---|
+| `VITE_API_URL` | API base URL for production builds. Omit in development (Vite proxy handles it). |
+
+Create a `.env.local` file for local overrides (not committed).
+
+---
+
+## Not Yet Implemented
+
+- Login / register pages (JWT backend is ready, no auth UI)
+- Search and filter controls (UI rendered but not wired)
+- Sorting (UI rendered but not wired)
+- Run Benchmark button (placeholder — execution engine not built)
+- Share / Copy Link button (placeholder)
+- Settings page
+- Dashboard stats (hardcoded zeros)

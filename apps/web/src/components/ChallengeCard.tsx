@@ -1,16 +1,17 @@
 import React from 'react';
 import { Play, Share2, Star } from 'lucide-react';
+import type { Difficulty } from '../lib/api';
 
 interface ChallengeCardProps {
   title: string;
   description: string;
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+  difficulty: Difficulty;
   category: string;
   tags: string[];
 }
 
 const ChallengeCard: React.FC<ChallengeCardProps> = ({ title, description, difficulty, category, tags }) => {
-  const diffColors = {
+  const diffColors: Record<Difficulty, string> = {
     Beginner: 'text-green-400 bg-green-400/10 border-green-400/20',
     Intermediate: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20',
     Advanced: 'text-orange-400 bg-orange-400/10 border-orange-400/20',
@@ -30,9 +31,9 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ title, description, diffi
           <Star size={20} />
         </button>
       </div>
-      
+
       <p className="text-gray-400 text-sm mb-6 line-clamp-2">{description}</p>
-      
+
       <div className="flex flex-wrap gap-2 mb-6">
         {tags.map(tag => (
           <span key={tag} className="text-[10px] uppercase font-bold tracking-wider text-gray-500 border border-card-border px-2 py-1 rounded-md">

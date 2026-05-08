@@ -10,9 +10,10 @@ public enum Difficulty
 
 public enum SubmissionStatus
 {
-    Pending = 0,
-    Processing = 1,
-    Completed = 2,
-    Failed = 3,
-    TimedOut = 4
+    None = 0,
+    Pending = 1,
+    Processing = 2,
+    Completed = 3,
+    Failed = 4,
+    TimedOut = 5
 }

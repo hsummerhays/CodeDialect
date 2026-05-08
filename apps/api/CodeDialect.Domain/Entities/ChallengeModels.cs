@@ -5,7 +5,16 @@ namespace CodeDialect.Domain.Entities;
 
 public class Challenge : BaseEntity
 {
-    public string Title { get; set; } = string.Empty;
+    private string _title = string.Empty;
+
+    public string Title
+    {
+        get => _title;
+        set => _title = string.IsNullOrWhiteSpace(value)
+            ? throw new ArgumentException("Title cannot be empty.", nameof(value))
+            : value;
+    }
+
     public string Description { get; set; } = string.Empty;
     public Difficulty Difficulty { get; set; }
     public Guid CategoryId { get; set; }

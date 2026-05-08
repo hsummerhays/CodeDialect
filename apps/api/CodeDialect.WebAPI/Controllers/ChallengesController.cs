@@ -1,7 +1,10 @@
+using CodeDialect.Application.Common.Models;
 using CodeDialect.Application.Features.Challenges;
 using CodeDialect.Application.Features.Challenges.Commands;
 using CodeDialect.Application.Features.Challenges.Queries;
+using CodeDialect.Domain.Enums;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CodeDialect.WebAPI.Controllers;
@@ -18,9 +21,12 @@ public class ChallengesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<ChallengeDto>>> GetChallenges()
+    public async Task<ActionResult<PaginatedResult<ChallengeDto>>> GetChallenges(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] Difficulty? difficulty = null)
     {
-        return await _mediator.Send(new GetChallengesQuery());
+        return await _mediator.Send(new GetChallengesQuery(page, pageSize, difficulty));
     }
 
     [HttpGet("{id}")]
@@ -32,6 +38,7 @@ public class ChallengesController : ControllerBase
     }
 
     [HttpPost("{id}/submissions")]
+    [Authorize]
     public async Task<ActionResult<SubmissionResultDto>> SubmitChallenge(Guid id, [FromBody] SubmitChallengeRequest request)
     {
         var result = await _mediator.Send(new SubmitChallengeCommand(id, request.DialectId, request.Code));

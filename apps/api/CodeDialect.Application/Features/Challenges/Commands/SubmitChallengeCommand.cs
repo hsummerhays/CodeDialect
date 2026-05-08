@@ -10,10 +10,12 @@ public record SubmitChallengeCommand(Guid ChallengeId, Guid DialectId, string Co
 public class SubmitChallengeCommandHandler : IRequestHandler<SubmitChallengeCommand, SubmissionResultDto>
 {
     private readonly IApplicationDbContext _context;
+    private readonly ICurrentUserService _currentUser;
 
-    public SubmitChallengeCommandHandler(IApplicationDbContext context)
+    public SubmitChallengeCommandHandler(IApplicationDbContext context, ICurrentUserService currentUser)
     {
         _context = context;
+        _currentUser = currentUser;
     }
 
     public async Task<SubmissionResultDto> Handle(SubmitChallengeCommand request, CancellationToken cancellationToken)
@@ -24,7 +26,7 @@ public class SubmitChallengeCommandHandler : IRequestHandler<SubmitChallengeComm
             DialectId = request.DialectId,
             SubmittedCode = request.Code,
             Status = SubmissionStatus.Pending,
-            UserId = Guid.Empty // TODO: resolve from authenticated user context
+            UserId = _currentUser.UserId!.Value
         };
 
         _context.Submissions.Add(submission);

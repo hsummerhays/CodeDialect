@@ -18,6 +18,7 @@ public class GetChallengeDetailsQueryHandler : IRequestHandler<GetChallengeDetai
     public async Task<ChallengeDetailsDto?> Handle(GetChallengeDetailsQuery request, CancellationToken cancellationToken)
     {
         var challenge = await _context.Challenges
+            .AsNoTracking()
             .Include(c => c.Category)
             .Include(c => c.Implementations)
                 .ThenInclude(i => i.Dialect)
@@ -37,7 +38,9 @@ public class GetChallengeDetailsQueryHandler : IRequestHandler<GetChallengeDetai
                 i.DialectId,
                 i.Dialect?.Name ?? "Unknown",
                 i.Dialect?.Language?.Name ?? "Unknown",
-                i.StarterCode
+                i.StarterCode,
+                i.ReferenceSolution,
+                i.Dialect?.SyntaxFeatures ?? new()
             )).ToList(),
             challenge.Tags.ToList()
         );

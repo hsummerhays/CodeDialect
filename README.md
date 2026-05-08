@@ -1,106 +1,63 @@
 # CodeDialect
 
-> Open-source platform for cross-language coding challenges, syntax evolution, and ecosystem comparison.
+> Side-by-side coding challenges for language dialects, syntax evolution, and ecosystem comparison.
 
-**CodeDialect** helps developers understand how different programming languages, frameworks, and runtime versions express the same software concepts. It is designed to help developers master evolving ecosystems by solving challenges and comparing implementations across different languages and framework versions (e.g., C# .NET 8 vs .NET 10, Java 8 vs 21).
+**CodeDialect** helps developers understand how the same software concept is expressed across different programming languages, framework versions, and runtime generations. Instead of algorithm puzzles, challenges focus on real-world patterns and the evolution of language idioms.
 
-Instead of focusing only on algorithms, CodeDialect emphasizes:
+Examples of challenges included today:
 
-* modern syntax evolution
-* ecosystem migration
-* idiomatic implementations
-* version-to-version comparisons
-* real-world software patterns
-
-Examples include:
-
-* C# .NET Framework → .NET 10
-* Java 8 → Java 21
-* React class components → Hooks
-* JavaScript → TypeScript
-* AngularJS → Modern Angular
-* Node.js CommonJS → ES Modules
+| Legacy | Modern |
+|---|---|
+| .NET Framework 4.8 controllers | .NET 10 Minimal APIs |
+| Java 8 thread pools | Java 21 Virtual Threads |
+| JavaScript callbacks (ES5) | async/await (ES2023) |
+| Python 2.7 dicts | Python 3.12 dataclasses |
 
 ---
 
-# 🚀 Vision
+## What's Working
 
-Software ecosystems evolve rapidly, and developers often struggle to:
+- Challenge explorer with paginated list, difficulty filter, and category labels
+- Side-by-side comparison viewer (Monaco Editor, synchronized scroll)
+- Diff view between dialect implementations
+- Reveal/hide reference solution toggle
+- Dialect selector when a challenge has more than two implementations
+- Per-side syntax highlighting (each editor uses its language's grammar)
+- Submit code endpoint (returns 202 Accepted; execution engine is a stub)
+- Seed data: 6 challenges across C#, Java, JavaScript, TypeScript, and Python
 
-* modernize legacy syntax
-* learn newer framework patterns
-* compare idiomatic implementations across languages
-* understand how ecosystems solve similar problems differently
+## Not Yet Implemented
 
-CodeDialect aims to become a platform for:
-
-* syntax modernization
-* ecosystem comparison
-* developer education
-* coding challenges
-* language evolution tracking
-
----
-
-# ✨ Core Features
-
-## Multi-Language Coding Challenges
-
-Solve challenges using multiple programming languages and framework ecosystems.
-
-## Version-Aware Comparisons
-
-Compare implementations across runtime and framework versions:
-
-* .NET 8 vs .NET 10
-* Java 8 vs Java 21
-* React legacy vs modern patterns
-
-## Side-by-Side Syntax Viewer
-
-Visualize ecosystem differences with synchronized comparison views.
-
-## Monaco-Powered Editor
-
-Professional-grade editing experience using the VSCode Monaco Editor.
-
-## Challenge Categories
-
-Support for:
-
-* Front-End
-* Back-End
-* Full Stack
-* DevOps
-* Databases
-* APIs
-* Cloud
-* Security
-* Architecture
-
-## Extensible Execution Engine
-
-Architecture designed for isolated containerized execution and benchmarking.
+- Auth UI (login / register pages — JWT backend is wired, no frontend flow)
+- Code execution runner (Docker-sandboxed grading)
+- Benchmarking and scoring
+- EF Core migrations (dev uses `EnsureCreated` with InMemory DB)
+- Tests
 
 ---
 
-# 🏗️ Architecture
+## Architecture
 
-CodeDialect follows **Clean Architecture** principles with strong separation of concerns, modularity, and testability.
+Clean Architecture with CQRS, strict layer boundaries, and no upward dependencies.
 
-## High-Level Architecture
+```
+Domain        — entities, enums, value objects (no external deps)
+Application   — CQRS handlers, DTOs, interfaces, validation behaviors
+Infrastructure — EF Core, Identity, JWT, Redis, execution stub
+WebAPI        — controllers, middleware, Swagger, program entry
+```
 
 ```mermaid
 graph TD
-    Web[React Frontend]
-    API[.NET API]
+    Web[React 19 Frontend :5173]
+    API[ASP.NET Core WebAPI :5187]
     App[Application Layer]
     Domain[Domain Layer]
-    Infra[Infrastructure]
+    Infra[Infrastructure Layer]
     DB[(PostgreSQL)]
     Redis[(Redis)]
 
-    Web --> API
+    Web -->|Vite proxy /api| API
     API --> App
     App --> Domain
     App --> Infra
@@ -108,146 +65,146 @@ graph TD
     Infra --> Redis
 ```
 
-## Layers
+### Key design decisions
 
-### Domain
-Pure business entities, enums, and domain logic. No dependencies on other layers.
-
-### Application
-Application use cases, CQRS Commands/Queries, DTOs, Validation, and orchestration.
-
-### Infrastructure
-External implementations and integrations (EF Core, Redis, Execution Runners).
-
-### WebAPI
-Application entry point (Controllers, Middleware, OpenAPI/Swagger).
+- **MediatR 14 pipeline**: `ValidationBehavior<TRequest,TResponse>` runs FluentValidation before every command handler
+- **Score as owned type**: `Score` is embedded in the `Submission` table via EF Core `OwnsOne` — not a separate entity
+- **ComparisonImplementation junction table**: `Comparison` references implementations via a proper FK junction (not a raw `List<Guid>`)
+- **IEntityTypeConfiguration classes**: One class per entity in `Infrastructure/Persistence/Configurations/`; `OnModelCreating` is a single `ApplyConfigurationsFromAssembly` call
+- **JSON value converters**: `List<string>` and `Dictionary<string,string>` fields use JSON converters that work across InMemory and PostgreSQL providers
+- **ICurrentUserService**: User identity is resolved from `IHttpContextAccessor` in Infrastructure; the Application layer only sees the interface
+- **Global exception handler**: `GlobalExceptionHandler : IExceptionHandler` maps `ValidationException` → 400, `NotFoundException` → 404, `UnauthorizedAccessException` → 401
 
 ---
 
-# 🚀 Tech Stack
+## Tech Stack
 
-## Backend
+### Backend
+| | |
+|---|---|
+| Runtime | .NET 10 |
+| Framework | ASP.NET Core Web API |
+| Architecture | Clean Architecture + CQRS |
+| Mediator | MediatR 14 |
+| Validation | FluentValidation 12 |
+| ORM | Entity Framework Core 10 |
+| Database | PostgreSQL (prod) / InMemory (dev) |
+| Cache | Redis (prod) / DistributedMemoryCache (dev) |
+| Auth | ASP.NET Core Identity + JWT Bearer |
+| API docs | Swashbuckle / OpenAPI (Swagger UI with Bearer auth) |
 
-* .NET 10 (ASP.NET Core Web API)
-* Clean Architecture + CQRS (MediatR)
-* Entity Framework Core (PostgreSQL)
-* Redis
-* JWT Authentication
-* Swagger / OpenAPI
-
-## Frontend
-
-* React 18+ (Vite)
-* TypeScript
-* Tailwind CSS v4
-* Monaco Editor
-* Zustand
-* TanStack Query
-
-## Infrastructure
-
-* Docker & Docker Compose
-* Environment-based configuration
-
----
-
-# 🔒 Planned Code Execution Model
-
-CodeDialect is being architected to support secure isolated execution using containerized runners.
-
-Planned capabilities include:
-
-* Docker-based sandboxing
-* Execution timeouts
-* Memory limits
-* Runtime benchmarking
-* Multi-language runners
-* Compile/run pipelines
-* Execution telemetry
+### Frontend
+| | |
+|---|---|
+| Framework | React 19 + TypeScript 6 |
+| Build tool | Vite 8 |
+| Styling | Tailwind CSS v4 |
+| Editor | Monaco Editor (`@monaco-editor/react`) |
+| Data fetching | TanStack Query v5 + Axios |
+| Routing | React Router v7 |
+| Animation | Framer Motion |
+| State | Zustand |
 
 ---
 
-# 🛠️ Getting Started
+## Getting Started
 
-## Prerequisites
+### Prerequisites
 
-* .NET 10 SDK
-* Node.js 18+
-* Docker & Docker Compose
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
+- [Node.js 20+](https://nodejs.org/)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (optional — only needed for PostgreSQL/Redis)
 
----
+### Install all dependencies
 
-### Quick Start
+```bash
+npm run install:all
+```
 
-We use `concurrently` via the root `package.json` to orchestrate everything natively:
+### Development (InMemory DB — no Docker required)
 
-1. **Install Dependencies**
-   ```bash
-   npm run install:all
-   ```
+The API defaults to an in-memory database in development. No external services needed.
 
-2. **Start Infrastructure Services**
-   ```bash
-   npm run dev:infra
-   ```
+```bash
+npm run dev
+```
 
-3. **Start Development Environment**
-   ```bash
-   npm run dev
-   ```
-   *This starts both the .NET API and React Vite Frontend with hot-reloading.*
+This starts both the API (`http://localhost:5187`) and the web app (`http://localhost:5173`) with hot-reload. The Vite dev server proxies `/api` to the API automatically.
 
----
+Swagger UI is available at `http://localhost:5187/swagger`.
 
-# 🧩 MVP Features
+### Development with PostgreSQL + Redis
 
-* Authentication & Authorization
-* Challenge Explorer
-* Challenge Categories
-* Syntax Comparison Viewer
-* Monaco Editor Integration
-* Progress Tracking Dashboard
-* Challenge Difficulty Levels
-* Multi-Version Challenge Support
-* Clean Architecture Backend
-* Docker-Based Local Development
+```bash
+# 1. Start infrastructure services
+npm run dev:infra
 
----
+# 2. Set UseInMemoryDatabase to false in appsettings.Development.json
+# 3. Start the dev servers
+npm run dev
+```
 
-# 🗺️ Roadmap
+### Environment variables
 
-## Phase 1
+| Variable | Description | Required in |
+|---|---|---|
+| `JwtSettings__Secret` | JWT signing key (min 32 chars) | Production |
+| `ConnectionStrings__DefaultConnection` | PostgreSQL connection string | Production |
+| `ConnectionStrings__Redis` | Redis connection string | Production |
 
-* Core platform
-* Authentication
-* Challenge management
-* Syntax comparison viewer
-* Multi-language metadata
-
-## Phase 2
-
-* Secure code execution
-* Benchmarking
-* Runtime comparisons
-* Scoring engine
-* Submission history
-
-## Phase 3
-
-* AI-assisted feedback
-* Idiomatic scoring
-* Migration assistance
-* Team/organization support
-* Real-time collaboration
+In development these are set in `apps/api/CodeDialect.WebAPI/appsettings.Development.json`. **Never commit production secrets.**
 
 ---
 
-# 🤝 Contributing
+## Project Structure
 
-Contributions are welcome. Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
+```
+CodeDialect/
+├── apps/
+│   ├── api/
+│   │   ├── CodeDialect.Domain/          # Entities, enums, value objects
+│   │   ├── CodeDialect.Application/     # CQRS, DTOs, interfaces, validators
+│   │   ├── CodeDialect.Infrastructure/  # EF Core, Identity, services
+│   │   └── CodeDialect.WebAPI/          # Controllers, middleware, Program.cs
+│   └── web/                             # React + TypeScript frontend
+├── docker/
+│   ├── docker-compose.infra.yml         # PostgreSQL + Redis only
+│   ├── docker-compose.yml               # Full stack
+│   └── Dockerfile.api
+├── infrastructure/                      # Future: Terraform, K8s, CI/CD
+└── docker-compose.yml                   # Root convenience compose
+```
 
 ---
 
-# 📄 License
+## Roadmap
 
-This project is licensed under the MIT License.
+### Phase 1 — Core (in progress)
+- [x] Challenge explorer with pagination and filtering
+- [x] Side-by-side comparison viewer
+- [x] Monaco Editor with per-dialect syntax highlighting
+- [x] CQRS + validation pipeline
+- [x] JWT auth backend
+- [ ] Auth UI (login / register)
+- [ ] User submission history
+
+### Phase 2 — Execution
+- [ ] Docker-sandboxed code runner
+- [ ] Execution telemetry (time, memory)
+- [ ] Scoring engine
+- [ ] Benchmarking comparisons
+
+### Phase 3 — Intelligence
+- [ ] AI-assisted feedback on submissions
+- [ ] Idiomatic pattern scoring
+- [ ] Migration path suggestions
+
+---
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on architecture, code style, and the pull request process.
+
+## License
+
+MIT

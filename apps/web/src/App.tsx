@@ -1,19 +1,26 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import Layout from './components/Layout';
 import ChallengeCard from './components/ChallengeCard';
 import ChallengeDetail from './pages/ChallengeDetail';
+import Settings from './pages/Settings';
 import ErrorBoundary from './components/ErrorBoundary';
 import { challengesApi, type ChallengeDto } from './lib/api';
 import { Search, Filter, Cpu, Zap, TrendingUp, Loader2 } from 'lucide-react';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      retry: 1,
+    },
+  },
+});
 
 function Home() {
-  const { data: challenges, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['challenges'],
-    queryFn: challengesApi.getAll,
+    queryFn: () => challengesApi.getAll(),
   });
 
   return (
@@ -62,9 +69,9 @@ function Home() {
         </div>
       )}
 
-      {challenges && (
+      {data && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {challenges.map((challenge: ChallengeDto) => (
+          {data.items.map((challenge: ChallengeDto) => (
             <Link
               key={challenge.id}
               to={`/challenge/${challenge.id}`}
@@ -94,6 +101,7 @@ function App() {
             <Route path="/" element={<Layout><Home /></Layout>} />
             <Route path="/challenges" element={<Layout><Home /></Layout>} />
             <Route path="/challenge/:id" element={<ChallengeDetail />} />
+            <Route path="/settings" element={<Layout><Settings /></Layout>} />
           </Routes>
         </ErrorBoundary>
       </BrowserRouter>

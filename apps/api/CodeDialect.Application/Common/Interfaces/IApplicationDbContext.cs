@@ -12,8 +12,9 @@ public interface IApplicationDbContext
     DbSet<ChallengeImplementation> Implementations { get; }
     DbSet<ExecutionProfile> ExecutionProfiles { get; }
     DbSet<Submission> Submissions { get; }
-    DbSet<Score> Scores { get; }
+    // Score is owned by Submission — accessed via Submission.Score, no DbSet needed
     DbSet<Comparison> Comparisons { get; }
+    DbSet<ComparisonImplementation> ComparisonImplementations { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken);
 }

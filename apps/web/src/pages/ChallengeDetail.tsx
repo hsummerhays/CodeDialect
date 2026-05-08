@@ -1,10 +1,10 @@
-import React from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import ComparisonViewer from '../components/ComparisonViewer';
 import Layout from '../components/Layout';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { challengesApi } from '../lib/api';
+import { challengesApi, type ChallengeImplementationDto } from '../lib/api';
 
 const MONACO_LANGUAGE: Record<string, string> = {
   'C#': 'csharp',
@@ -13,6 +13,10 @@ const MONACO_LANGUAGE: Record<string, string> = {
   TypeScript: 'typescript',
   Python: 'python',
 };
+
+function toMonacoLang(languageName: string): string {
+  return MONACO_LANGUAGE[languageName] ?? languageName.toLowerCase();
+}
 
 const ChallengeDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,7 +28,18 @@ const ChallengeDetail = () => {
     enabled: !!id,
   });
 
-  const [leftImpl, rightImpl] = challenge?.implementations ?? [];
+  const implementations = challenge?.implementations ?? [];
+  const [leftIdx, setLeftIdx] = useState(0);
+  const [rightIdx, setRightIdx] = useState(1);
+
+  const leftImpl: ChallengeImplementationDto | undefined = implementations[leftIdx];
+  const rightImpl: ChallengeImplementationDto | undefined = implementations[rightIdx];
+
+  const displayLanguage = leftImpl && rightImpl
+    ? leftImpl.languageName === rightImpl.languageName
+      ? leftImpl.languageName
+      : `${leftImpl.languageName} / ${rightImpl.languageName}`
+    : '';
 
   return (
     <Layout>
@@ -48,22 +63,57 @@ const ChallengeDetail = () => {
           </div>
         )}
 
+        {/* Implementation selector — only shown when there are more than 2 */}
+        {implementations.length > 2 && (
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">Left:</span>
+              <select
+                value={leftIdx}
+                onChange={e => setLeftIdx(Number(e.target.value))}
+                className="bg-background border border-card-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                {implementations.map((impl, i) => (
+                  <option key={impl.id} value={i}>{impl.dialectName}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500">Right:</span>
+              <select
+                value={rightIdx}
+                onChange={e => setRightIdx(Number(e.target.value))}
+                className="bg-background border border-card-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+              >
+                {implementations.map((impl, i) => (
+                  <option key={impl.id} value={i}>{impl.dialectName}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
         {challenge && leftImpl && rightImpl && (
           <div className="flex-1">
             <ComparisonViewer
               challengeTitle={challenge.title}
               description={challenge.description}
-              language={MONACO_LANGUAGE[leftImpl.languageName] ?? leftImpl.languageName.toLowerCase()}
-              displayLanguage={leftImpl.languageName}
+              leftLanguage={toMonacoLang(leftImpl.languageName)}
+              rightLanguage={toMonacoLang(rightImpl.languageName)}
+              displayLanguage={displayLanguage}
               leftTitle={leftImpl.dialectName}
               rightTitle={rightImpl.dialectName}
               leftCode={leftImpl.starterCode}
               rightCode={rightImpl.starterCode}
+              leftReferenceSolution={leftImpl.referenceSolution}
+              rightReferenceSolution={rightImpl.referenceSolution}
+              leftFeatures={leftImpl.syntaxFeatures}
+              rightFeatures={rightImpl.syntaxFeatures}
             />
           </div>
         )}
 
-        {challenge && (!leftImpl || !rightImpl) && (
+        {challenge && implementations.length < 2 && (
           <div className="glass-panel p-6 rounded-2xl text-gray-400 text-sm">
             This challenge does not have two implementations to compare yet.
           </div>
