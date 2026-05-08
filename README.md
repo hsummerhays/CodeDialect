@@ -2,7 +2,7 @@
 
 > Open-source platform for cross-language coding challenges, syntax evolution, and ecosystem comparison.
 
-**CodeDialect** helps developers understand how different programming languages, frameworks, and runtime versions express the same software concepts.
+**CodeDialect** helps developers understand how different programming languages, frameworks, and runtime versions express the same software concepts. It is designed to help developers master evolving ecosystems by solving challenges and comparing implementations across different languages and framework versions (e.g., C# .NET 8 vs .NET 10, Java 8 vs 21).
 
 Instead of focusing only on algorithms, CodeDialect emphasizes:
 
@@ -86,7 +86,7 @@ Architecture designed for isolated containerized execution and benchmarking.
 
 # 🏗️ Architecture
 
-CodeDialect follows **Clean Architecture** principles with strong separation of concerns, modularity, and extensibility.
+CodeDialect follows **Clean Architecture** principles with strong separation of concerns, modularity, and testability.
 
 ## High-Level Architecture
 
@@ -111,42 +111,16 @@ graph TD
 ## Layers
 
 ### Domain
-
-Pure business logic and entities.
-
-* No framework dependencies
-* Core models and rules
-* Language/version abstractions
+Pure business entities, enums, and domain logic. No dependencies on other layers.
 
 ### Application
-
-Application use cases and orchestration.
-
-* CQRS Commands & Queries
-* DTOs
-* Validation
-* Interfaces
-* MediatR pipelines
+Application use cases, CQRS Commands/Queries, DTOs, Validation, and orchestration.
 
 ### Infrastructure
-
-External implementations and integrations.
-
-* EF Core
-* Redis
-* Authentication
-* Future execution runners
-* External services
+External implementations and integrations (EF Core, Redis, Execution Runners).
 
 ### WebAPI
-
-Application entry point.
-
-* Controllers
-* Middleware
-* Authentication
-* OpenAPI/Swagger
-* Dependency injection
+Application entry point (Controllers, Middleware, OpenAPI/Swagger).
 
 ---
 
@@ -154,33 +128,26 @@ Application entry point.
 
 ## Backend
 
-* .NET 10
-* ASP.NET Core Web API
-* Clean Architecture
-* CQRS + MediatR
-* Entity Framework Core
-* PostgreSQL
+* .NET 10 (ASP.NET Core Web API)
+* Clean Architecture + CQRS (MediatR)
+* Entity Framework Core (PostgreSQL)
 * Redis
 * JWT Authentication
 * Swagger / OpenAPI
 
 ## Frontend
 
-* React 18+
+* React 18+ (Vite)
 * TypeScript
-* Vite
-* Tailwind CSS
+* Tailwind CSS v4
 * Monaco Editor
 * Zustand
 * TanStack Query
 
 ## Infrastructure
 
-* Docker
-* Docker Compose
+* Docker & Docker Compose
 * Environment-based configuration
-* GitHub Actions readiness
-* Kubernetes-ready architecture
 
 ---
 
@@ -198,8 +165,6 @@ Planned capabilities include:
 * Compile/run pipelines
 * Execution telemetry
 
-The execution engine is intentionally abstracted to support future scalability and distributed execution.
-
 ---
 
 # 🛠️ Getting Started
@@ -212,48 +177,25 @@ The execution engine is intentionally abstracted to support future scalability a
 
 ---
 
-### Quick Start (Windows)
+### Quick Start
 
-```batch
-.\scripts\run-dev.bat
-```
+We use `concurrently` via the root `package.json` to orchestrate everything natively:
 
-*Or via PowerShell:*
+1. **Install Dependencies**
+   ```bash
+   npm run install:all
+   ```
 
-```powershell
-.\scripts\run-dev.ps1
-```
+2. **Start Infrastructure Services**
+   ```bash
+   npm run dev:infra
+   ```
 
-### Quick Start (Linux/macOS)
-
-```bash
-chmod +x scripts/*.sh
-./scripts/run-dev.sh
-```
-
-### Manual Setup
-
-#### 1. Start Infrastructure Services
-
-```bash
-cd docker
-docker-compose up -d
-```
-
-### 3. Start Backend
-
-```bash
-cd apps/api/CodeDialect.WebAPI
-dotnet run
-```
-
-### 4. Start Frontend
-
-```bash
-cd apps/web
-npm install
-npm run dev
-```
+3. **Start Development Environment**
+   ```bash
+   npm run dev
+   ```
+   *This starts both the .NET API and React Vite Frontend with hot-reloading.*
 
 ---
 
@@ -302,22 +244,7 @@ npm run dev
 
 # 🤝 Contributing
 
-Contributions are welcome.
-
-Planned contributor areas include:
-
-* Language runners
-* Challenge packs
-* Framework comparisons
-* Frontend UX improvements
-* Benchmarking
-* Documentation
-
-Please see:
-
-* `CONTRIBUTING.md`
-* `ROADMAP.md`
-* `CODE_OF_CONDUCT.md`
+Contributions are welcome. Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
 
 ---
 
