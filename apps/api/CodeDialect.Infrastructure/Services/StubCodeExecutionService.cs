@@ -11,8 +11,8 @@ public class StubCodeExecutionService : ICodeExecutionService
         string code, string language, string version, List<TestCase> testCases)
     {
         return Task.FromResult(new ExecutionResult(
-            Status: SubmissionStatus.Failed,
-            Output: string.Empty,
+            Status: SubmissionStatus.Pending,
+            Output: "Execution runner not yet available.",
             ExecutionTimeMs: 0,
             MemoryUsedBytes: 0,
             Results: testCases.Select(tc =>

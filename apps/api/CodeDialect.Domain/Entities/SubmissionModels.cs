@@ -34,7 +34,7 @@ public class Comparison : BaseEntity
 {
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public List<string> ComparisonNotes { get; set; } = new();
+    public IReadOnlyList<string> ComparisonNotes { get; set; } = new List<string>();
     public ICollection<ComparisonImplementation> Implementations { get; set; } = new List<ComparisonImplementation>();
 }
 

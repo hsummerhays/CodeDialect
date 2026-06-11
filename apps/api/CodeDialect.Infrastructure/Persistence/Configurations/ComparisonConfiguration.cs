@@ -1,4 +1,3 @@
-using System.Text.Json;
 using CodeDialect.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -10,10 +9,7 @@ public class ComparisonConfiguration : IEntityTypeConfiguration<Comparison>
     public void Configure(EntityTypeBuilder<Comparison> builder)
     {
         builder.Property(c => c.ComparisonNotes)
-            .HasConversion(
-                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new()
-            );
+            .HasConversion(JsonValueConverters.StringList());
     }
 }
 

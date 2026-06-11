@@ -23,10 +23,11 @@
 - 🔄 **Comparison Viewer**: Side-by-side code pane built with Monaco Editor including synchronized scrolling.
 - 🔀 **Diff Visualizer**: Real-time git-style diff view comparing the evolution between dialects.
 - 👁️ **Solution Toggle**: Reveal or hide the reference solution on both panes instantly.
-- 🎛️ **Multi-Dialect Selector**: Easily swap out different dialects when a challenge has multiple implementations.
+- 🎛️ **Multi-Dialect Selector**: Swap active dialects when a challenge has more than two implementations.
 - 🎨 **Language-Specific Grammars**: Independent, context-aware syntax highlighting for each active pane.
 - ⚙️ **Modular Backend**: Fully-structured REST API with CQRS commands, pipeline validation, and standard HTTP handlers.
 - 🌱 **Rich Seeding**: Automatic DB seeding with 6 real-world challenges across C#, Java, JavaScript, TypeScript, and Python.
+- ⚙️ **Settings Page**: Profile, appearance (theme, glassmorphism intensity), and editor preference panels.
 
 ---
 
@@ -60,10 +61,12 @@
 CodeDialect uses Clean Architecture with CQRS, enforcing strict layer boundaries:
 
 ```
-Domain        — Core business logic, Entities, Enums, and Value Objects (Zero external dependencies)
-Application   — CQRS Query/Command Handlers, DTOs, interfaces, and validation pipelines
-Infrastructure — EF Core DbContext, Configurations, Identity, JWT, Redis, and execution engine stubs
-WebAPI        — Controllers, Swagger Configuration, Global Exception Middleware, and program entry
+Domain         — Entities, Enums, Value Objects. Zero external dependencies.
+Application    — CQRS handlers, DTOs, repository interfaces, validation pipeline.
+                 Framework-free: no EF Core, no ORM. Depends only on Domain.
+Infrastructure — EF Core repositories, DbContext, Identity, JWT, Redis, execution stubs.
+                 Implements Application interfaces; owns all framework dependencies.
+WebAPI         — Controllers, Swagger, Global Exception Middleware, program entry.
 ```
 
 ### Dependency Flow
@@ -80,8 +83,9 @@ graph TD
 
     Web -->|Vite proxy /api| API
     API --> App
+    API --> Infra
+    Infra --> App
     App --> Domain
-    App --> Infra
     Infra --> DB
     Infra --> Redis
 ```
@@ -135,12 +139,20 @@ CodeDialect/
 │   │   ├── CodeDialect.Application/     # CQRS features, Behaviors, DTOs, Interfaces
 │   │   ├── CodeDialect.Infrastructure/  # EF Core, AppDbContext, Configurations, Identity, Seed Data
 │   │   └── CodeDialect.WebAPI/          # Controllers, Program.cs, Middleware, Configs
+│   ├── runner/                          # Code execution runner service (scaffold — in progress)
 │   └── web/                             # React 19 SPA + Tailwind CSS + Monaco Editor
 ├── challenges/                          # JSON challenge definition schemas
 ├── docker/
 │   ├── docker-compose.infra.yml         # Dev services (PostgreSQL + Redis)
 │   ├── docker-compose.yml               # Complete containerized stack
 │   └── Dockerfile.api                   # Multistage build script for WebAPI
+├── docs/
+│   ├── adr/                             # Architecture Decision Records
+│   └── architecture/                    # System design documents
+├── infrastructure/                      # IaC placeholder (Terraform, K8s, CI/CD — planned)
+├── protos/
+│   └── execution.proto                  # gRPC service contract for the execution runner
+├── scripts/                             # Dev automation (setup, run, stop)
 └── docker-compose.yml                   # Root orchestration file
 ```
 
@@ -156,17 +168,41 @@ CodeDialect/
 - [x] JWT auth backend
 - [ ] Auth UI (login / register pages)
 - [ ] User submission history
+- [ ] Wire search bar and difficulty filter to the API (UI rendered; query params not yet sent)
+- [ ] Pagination controls on the challenge list (API returns `hasNextPage` / `hasPreviousPage`; frontend doesn't render page controls)
+- [ ] Connect "Run Benchmark" button to the submission endpoint (button is rendered; `onClick` not implemented)
+- [ ] Submission status polling — surface `Processing → Completed / Failed / TimedOut` states in the UI
+- [ ] EF Core migrations to replace `EnsureCreated` (required before any persistent deployment)
+- [ ] Category filter on the challenge list API and UI
 
 ### Phase 2 — Execution
-- [ ] Docker-sandboxed code runner
+- [x] gRPC execution service contract defined (`protos/execution.proto`)
+- [ ] Docker-sandboxed code runner (`apps/runner` scaffold in place)
 - [ ] Execution telemetry (execution time, memory footprint)
-- [ ] Scoring engine
+- [ ] Scoring engine (Score value object already modelled in the domain)
 - [ ] Benchmarking comparisons
 
 ### Phase 3 — Intelligence
 - [ ] AI-assisted feedback on submissions
 - [ ] Idiomatic pattern scoring
 - [ ] Migration path suggestions
+- [ ] "Why this matters" narrative panels — contextual notes explaining the motivation behind each language evolution (e.g. why virtual threads replaced thread pools)
+- [ ] Syntax evolution timeline — visualise the full dialect progression for a language rather than just pairwise comparison
+
+### Phase 4 — Community
+- [ ] User profiles with public completion history and stats
+- [ ] Global leaderboard with difficulty-weighted ranking (dashboard stat card is already wired as a placeholder)
+- [ ] Challenge bookmarking and personal reading lists (Star button rendered on each card; handler not yet implemented)
+- [ ] Shareable permalink that preserves dialect selection and diff-vs-side-by-side view state
+- [ ] Community-submitted challenges with an editor review and approval workflow
+- [ ] Inline annotations and discussion threads on specific lines of an implementation
+
+### Platform Foundations
+- [ ] Test suite: unit tests for Application handlers + integration tests using Testcontainers + PostgreSQL
+- [ ] GitHub Actions CI/CD pipeline with build and test gates
+- [ ] Redis query caching for paginated challenge lists (cache layer registered in DI; no reads or writes yet)
+- [ ] API rate limiting and abuse prevention
+- [ ] Multi-file challenge mode for comparisons that span project structure (e.g. build config, entry point, dependency manifest)
 
 ---
 

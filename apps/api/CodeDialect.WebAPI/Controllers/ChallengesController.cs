@@ -11,37 +11,30 @@ namespace CodeDialect.WebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ChallengesController : ControllerBase
+public class ChallengesController(IMediator mediator) : ControllerBase
 {
-    private readonly IMediator _mediator;
-
-    public ChallengesController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
     [HttpGet]
     public async Task<ActionResult<PaginatedResult<ChallengeDto>>> GetChallenges(
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20,
         [FromQuery] Difficulty? difficulty = null)
     {
-        return await _mediator.Send(new GetChallengesQuery(page, pageSize, difficulty));
+        return await mediator.Send(new GetChallengesQuery(page, pageSize, difficulty));
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<ChallengeDetailsDto>> GetChallenge(Guid id)
     {
-        var result = await _mediator.Send(new GetChallengeDetailsQuery(id));
-        if (result == null) return NotFound();
-        return result;
+        return await mediator.Send(new GetChallengeDetailsQuery(id));
     }
 
     [HttpPost("{id}/submissions")]
     [Authorize]
-    public async Task<ActionResult<SubmissionResultDto>> SubmitChallenge(Guid id, [FromBody] SubmitChallengeRequest request)
+    public async Task<ActionResult<SubmissionResultDto>> SubmitChallenge(
+        Guid id,
+        [FromBody] SubmitChallengeRequest request)
     {
-        var result = await _mediator.Send(new SubmitChallengeCommand(id, request.DialectId, request.Code));
+        var result = await mediator.Send(new SubmitChallengeCommand(id, request.DialectId, request.Code));
         return Accepted(result);
     }
 }

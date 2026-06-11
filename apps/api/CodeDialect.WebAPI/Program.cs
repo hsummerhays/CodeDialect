@@ -1,5 +1,6 @@
 using CodeDialect.Application;
 using CodeDialect.Infrastructure;
+using CodeDialect.Infrastructure.Persistence;
 using CodeDialect.WebAPI.Middleware;
 using Microsoft.OpenApi;
 
@@ -48,7 +49,9 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    await CodeDialect.Infrastructure.Persistence.InitialSeed.SeedAsync(scope.ServiceProvider);
+    var ctx = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    var log = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("InitialSeed");
+    await InitialSeed.SeedAsync(ctx, log);
 }
 
 app.UseExceptionHandler();

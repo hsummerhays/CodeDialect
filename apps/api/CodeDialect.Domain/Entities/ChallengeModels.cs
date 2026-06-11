@@ -19,7 +19,7 @@ public class Challenge : BaseEntity
     public Difficulty Difficulty { get; set; }
     public Guid CategoryId { get; set; }
     public Category? Category { get; set; }
-    public List<string> Tags { get; set; } = new();
+    public IReadOnlyList<string> Tags { get; set; } = new List<string>();
 
     public ICollection<ChallengeImplementation> Implementations { get; set; } = new List<ChallengeImplementation>();
     public ICollection<Submission> Submissions { get; set; } = new List<Submission>();
@@ -34,8 +34,8 @@ public class ChallengeImplementation : BaseEntity
 
     public string StarterCode { get; set; } = string.Empty;
     public string ReferenceSolution { get; set; } = string.Empty;
-    public string TestCases { get; set; } = string.Empty; // Store as JSON or script
-    
+    public string TestCases { get; set; } = string.Empty;
+
     public Guid ExecutionProfileId { get; set; }
     public ExecutionProfile? ExecutionProfile { get; set; }
 }
@@ -44,7 +44,7 @@ public class ExecutionProfile : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
     public int TimeoutMs { get; set; } = 5000;
-    public long MemoryLimitBytes { get; set; } = 128 * 1024 * 1024; // 128MB
+    public long MemoryLimitBytes { get; set; } = 128 * 1024 * 1024;
     public string DockerImage { get; set; } = string.Empty;
     public Dictionary<string, string> EnvironmentVariables { get; set; } = new();
 }

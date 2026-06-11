@@ -1,4 +1,3 @@
-using CodeDialect.Application.Common.Interfaces;
 using CodeDialect.Domain.Entities;
 using CodeDialect.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -6,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CodeDialect.Infrastructure.Persistence;
 
-public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>, IApplicationDbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
@@ -26,5 +25,3 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
     }
 }
-
-public class ApplicationRole : Microsoft.AspNetCore.Identity.IdentityRole<Guid> { }
