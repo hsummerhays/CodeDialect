@@ -22,7 +22,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: src/CodeDialect.WebAPI/Dockerfile
+      dockerfile: docker/Dockerfile.api
     container_name: codedialect_api
     environment:
       ASPNETCORE_ENVIRONMENT: Development
